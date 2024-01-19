@@ -58,6 +58,9 @@ read_verilog counter.v
 
 synth_gowin -top counter -json counter.json
 
+yosys -p "read_verilog counter.v; synth_gowin -top counter -json counter.json"
+
+
 (env) devel@pi4-30:~/tang-nano/counter $ ls -la
 total 1252
 drwxr-xr-x 2 devel devel    4096 Jan 18 22:59 .
@@ -66,6 +69,8 @@ drwxr-xr-x 4 devel devel    4096 Jan 18 23:01 ..
 -rw-r--r-- 1 devel devel 1263157 Jan 18 22:59 counter.json
 -rw-r--r-- 1 devel devel     367 Jan 18 22:55 counter.v
 -rw-r--r-- 1 devel devel     165 Jan 18 22:57 tangnano9k.cst
+
+export PATH=/home/devel/tang-nano/nextpnr:$PATH
 
 nextpnr-gowin --json counter.json --freq 27 --write counter_pnr.json --device GW1NR-LV9QN88PC6/I5 --family GW1N-9C --cst tangnano9k.cst
 
@@ -264,6 +269,18 @@ Info: [ 34653,  34706) |*************
 Info: [ 34706,  34759) |** 
 
 Info: Program finished normally.
+
+After running this you should now have a new file  counter_pnr.json. The final step is to convert this routed information into the bits format that the FPGA itself requires. This can be done using gowin_pack from apicula.
+
+gowin_pack -d GW1N-9C -o counter.fs counter_pnr.json
+
+(env) devel@pi4-30:~/tang-nano/counter $ ls
+abc.history  counter.json      counter.v
+counter.fs   counter_pnr.json  tangnano9k.cst
+
+The first parameter -d is to specify which device family we are using the -o is to define the output file with the binary data and the final parameter (no flag) is the json file output from nextpnr.
+
+Again after running this you should have the final binary file (in ascii format) counter.fs
 
 sudo apt install libftdi1-dev
 
